@@ -1,7 +1,7 @@
 const RE_YOUTUBE =
   /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
 const USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36,gzip(gfe)";
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36,gzip(gfe)';
 const RE_XML_TRANSCRIPT =
   /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
 
@@ -14,7 +14,7 @@ export class YoutubeTranscriptError extends Error {
 export class YoutubeTranscriptTooManyRequestError extends YoutubeTranscriptError {
   constructor() {
     super(
-      "YouTube is receiving too many requests from this IP and now requires solving a captcha to continue"
+      'YouTube is receiving too many requests from this IP and now requires solving a captcha to continue'
     );
   }
 }
@@ -41,7 +41,7 @@ export class YoutubeTranscriptNotAvailableLanguageError extends YoutubeTranscrip
   constructor(lang: string, availableLangs: string[], videoId: string) {
     super(
       `No transcripts are available in ${lang} this video (${videoId}). Available languages: ${availableLangs.join(
-        ", "
+        ', '
       )}`
     );
   }
@@ -70,11 +70,11 @@ export class YoutubeTranscript {
     videoId: string
   ): Promise<TranscriptResponse[]> {
     const identifier = this.retrieveVideoId(videoId);
-    const lang = "en";
+    const lang = 'en';
     const videoPageResponse = await fetch(
       `https://www.youtube.com/watch?v=${identifier}`,
       {
-        headers: { "Accept-Language": lang, "User-Agent": USER_AGENT },
+        headers: { 'Accept-Language': lang, 'User-Agent': USER_AGENT },
       }
     );
     const videoPageBody = await videoPageResponse.text();
@@ -94,18 +94,18 @@ export class YoutubeTranscript {
     const captions = (() => {
       try {
         return JSON.parse(
-          splittedHTML[1].split(',"videoDetails')[0].replace("\n", "")
+          splittedHTML[1].split(',"videoDetails')[0].replace('\n', '')
         );
       } catch (e) {
         return undefined;
       }
-    })()?.["playerCaptionsTracklistRenderer"];
+    })()?.['playerCaptionsTracklistRenderer'];
 
     if (!captions) {
       throw new YoutubeTranscriptDisabledError(videoId);
     }
 
-    if (!("captionTracks" in captions)) {
+    if (!('captionTracks' in captions)) {
       throw new YoutubeTranscriptNotAvailableError(videoId);
     }
 
@@ -125,8 +125,8 @@ export class YoutubeTranscript {
 
     const transcriptResponse = await fetch(transcriptURL, {
       headers: {
-        "Accept-Language": lang,
-        "User-Agent": USER_AGENT,
+        'Accept-Language': lang,
+        'User-Agent': USER_AGENT,
       },
     });
     if (!transcriptResponse.ok) {
@@ -155,7 +155,7 @@ export class YoutubeTranscript {
       return matchId[1];
     }
     throw new YoutubeTranscriptError(
-      "Impossible to retrieve Youtube video ID."
+      'Impossible to retrieve Youtube video ID.'
     );
   }
 }

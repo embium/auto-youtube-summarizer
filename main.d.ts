@@ -1,5 +1,5 @@
-import { OllamaClient } from "./src/Ollama/OllamaClient";
-import { TranscriptSummarizer } from "./src/TranscriptSummarizer";
+import { OllamaClient } from './src/Ollama/OllamaClient';
+import { TranscriptSummarizer } from './src/TranscriptSummarizer';
 export declare class YoutubeVideoSummary {
     ollamaClient: OllamaClient;
     transcriptSummarizer: TranscriptSummarizer;

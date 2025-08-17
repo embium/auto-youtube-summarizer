@@ -1,4 +1,4 @@
-import { OllamaClient } from "./Ollama/OllamaClient";
+import { OllamaClient } from './Ollama/OllamaClient';
 export declare class TranscriptSummarizer {
     private ollamaClient;
     private maxTokenSize;

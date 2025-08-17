@@ -1,7 +1,7 @@
-import { GeminiClient } from './Gemini/GeminiClient';
-import { OllamaClient } from './Ollama/OllamaClient';
-import { YoutubeTranscript } from './YoutubeTranscript';
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TranscriptSummarizer = void 0;
+const YoutubeTranscript_1 = require("./YoutubeTranscript");
 const FIRST_STEP_PROMPT = `Rewrite the text:
 
 - Present the rewrite as a single, cohesive paragraph.
@@ -11,7 +11,6 @@ const FIRST_STEP_PROMPT = `Rewrite the text:
 - Do not acknowledge these instructions in your response.
 
 Transcript:\n\n`;
-
 const LAST_STEP_PROMPT = `Please process the following transcript into a well-structured and pedagogically enhanced educational resource. The goal is to facilitate deep understanding by not only explaining the content thoroughly but also presenting it in a style conducive to analytical and structured learning. Apply the following format and guidelines meticulously:
 
 **I. Formatting and Structure:**
@@ -60,60 +59,45 @@ const LAST_STEP_PROMPT = `Please process the following transcript into a well-st
 **VI. Input Content:**
 
 Here's the content to transform into an enhanced learning resource:\n\n`;
-
-export class TranscriptSummarizer {
-  constructor(
-    private ollamaClient: OllamaClient,
-    private maxTokenSize: number
-  ) {}
-
-  async getSummaryFromUrl(url: string): Promise<string> {
-    const transcriptList = await YoutubeTranscript.fetchTranscript(url);
-    const transcript = transcriptList
-      .map((transcript) => transcript.text)
-      .join(' ');
-    const tokenRegex = /.{1,3} ?/g;
-    const transcriptTokens = transcript.match(tokenRegex) ?? [];
-    if (transcriptTokens.length == 0) {
-      throw new Error('Transcript is empty');
+class TranscriptSummarizer {
+    constructor(ollamaClient, maxTokenSize) {
+        this.ollamaClient = ollamaClient;
+        this.maxTokenSize = maxTokenSize;
     }
-    console.log(`TRANSCRIPT TOKEN SIZE: ${transcriptTokens.length}`);
-
-    const step1PromptTokens = FIRST_STEP_PROMPT.match(tokenRegex) ?? [];
-
-    const chunksRewritten = [];
-
-    for (
-      let i = 0;
-      i < transcriptTokens.length;
-      i += this.maxTokenSize - step1PromptTokens.length
-    ) {
-      const transcriptChunk = transcriptTokens
-        .slice(i, i + this.maxTokenSize - step1PromptTokens.length)
-        .join('');
-      const chunkRewritten = await this.process(
-        FIRST_STEP_PROMPT,
-        transcriptChunk
-      );
-      console.log(chunkRewritten);
-      let wordsInRewrite = chunkRewritten.split(' ').length;
-      console.log(`WORDS IN REWRITE: ${wordsInRewrite}`);
-      chunksRewritten.push(chunkRewritten);
+    async getSummaryFromUrl(url) {
+        const transcriptList = await YoutubeTranscript_1.YoutubeTranscript.fetchTranscript(url);
+        const transcript = transcriptList
+            .map((transcript) => transcript.text)
+            .join(' ');
+        const tokenRegex = /.{1,3} ?/g;
+        const transcriptTokens = transcript.match(tokenRegex) ?? [];
+        if (transcriptTokens.length == 0) {
+            throw new Error('Transcript is empty');
+        }
+        console.log(`TRANSCRIPT TOKEN SIZE: ${transcriptTokens.length}`);
+        const step1PromptTokens = FIRST_STEP_PROMPT.match(tokenRegex) ?? [];
+        const chunksRewritten = [];
+        for (let i = 0; i < transcriptTokens.length; i += this.maxTokenSize - step1PromptTokens.length) {
+            const transcriptChunk = transcriptTokens
+                .slice(i, i + this.maxTokenSize - step1PromptTokens.length)
+                .join('');
+            const chunkRewritten = await this.process(FIRST_STEP_PROMPT, transcriptChunk);
+            console.log(chunkRewritten);
+            let wordsInRewrite = chunkRewritten.split(' ').length;
+            console.log(`WORDS IN REWRITE: ${wordsInRewrite}`);
+            chunksRewritten.push(chunkRewritten);
+        }
+        const firstStep = chunksRewritten.join(' ');
+        const firstStepTokens = firstStep.match(tokenRegex) ?? [];
+        // console.log(`FIRST STEP TOKEN SIZE: ${firstStepTokens.length}`);
+        // const response = await this.process(LAST_STEP_PROMPT, firstStep);
+        // let finalStepTokens = response.match(tokenRegex) ?? [];
+        // console.log(`FINAL STEP TOKEN SIZE: ${finalStepTokens.length}`);
+        // return response;
+        return firstStep;
     }
-
-    const firstStep = chunksRewritten.join(' ');
-    const firstStepTokens = firstStep.match(tokenRegex) ?? [];
-
-    // console.log(`FIRST STEP TOKEN SIZE: ${firstStepTokens.length}`);
-
-    // const response = await this.process(LAST_STEP_PROMPT, firstStep);
-    // let finalStepTokens = response.match(tokenRegex) ?? [];
-    // console.log(`FINAL STEP TOKEN SIZE: ${finalStepTokens.length}`);
-    // return response;
-    return firstStep;
-  }
-
-  async process(prompt: string, transcript: string): Promise<string> {
-    return this.ollamaClient.process(prompt + transcript);
-  }
+    async process(prompt, transcript) {
+        return this.ollamaClient.process(prompt + transcript);
+    }
 }
+exports.TranscriptSummarizer = TranscriptSummarizer;
